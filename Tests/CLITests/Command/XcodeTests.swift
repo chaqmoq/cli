@@ -58,4 +58,3 @@ final class OpenTests: XCTestCase {
         XCTAssertNoThrow(try command.run())
     }
 }
-
