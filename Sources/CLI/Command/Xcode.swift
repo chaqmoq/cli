@@ -55,7 +55,7 @@ extension CLI.Chaqmoq.Xcode {
             fileURL.appendPathComponent(fileName)
             NSWorkspace.shared.open(fileURL)
             #else
-            shell("open", fileName)
+            CLI.shell("open", fileName)
             #endif
         }
     }
