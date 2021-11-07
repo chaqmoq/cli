@@ -53,7 +53,12 @@ extension CLI.Chaqmoq.Xcode {
             #if os(macOS)
             var fileURL = URL(fileURLWithPath: applicationDirectory)
             fileURL.appendPathComponent(fileName)
-            NSWorkspace.shared.open(fileURL)
+
+            if fileManager.fileExists(atPath: fileURL.path) {
+                NSWorkspace.shared.open(fileURL)
+            } else {
+                // TODO: exit with error
+            }
             #else
             CLI.shell("open", fileName)
             #endif
