@@ -2,13 +2,13 @@ import Foundation
 
 public struct CLI {
     @discardableResult
-    public static func shell(_ args: String...) -> Int32 {
-        let task = Process()
-        task.launchPath = "/usr/bin/env"
-        task.arguments = args
-        task.launch()
-        task.waitUntilExit()
+    public static func shell(_ args: String...) -> Process {
+        let process = Process()
+        process.launchPath = "/usr/bin/env"
+        process.arguments = args
+        process.launch()
+        process.waitUntilExit()
 
-        return task.terminationStatus
+        return process
     }
 }

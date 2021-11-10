@@ -13,12 +13,14 @@ let package = Package(
     ],
     dependencies: [
         .package(name: "chaqmoq-console", url: "https://github.com/chaqmoq/console.git", .branch("master")),
-        .package(name: "chaqmoq-dotenv", url: "https://github.com/chaqmoq/dotenv.git", .branch("master"))
+        .package(name: "chaqmoq-dotenv", url: "https://github.com/chaqmoq/dotenv.git", .branch("master")),
+        .package(name: "yaproq", url: "https://github.com/yaproq/yaproq.git", .branch("master"))
     ],
     targets: [
         .target(name: "CLI", dependencies: [
             .product(name: "Console", package: "chaqmoq-console"),
-            .product(name: "DotEnv", package: "chaqmoq-dotenv")
+            .product(name: "DotEnv", package: "chaqmoq-dotenv"),
+            .product(name: "Yaproq", package: "yaproq")
         ]),
         .target(name: "Run", dependencies: [
             .target(name: "CLI")

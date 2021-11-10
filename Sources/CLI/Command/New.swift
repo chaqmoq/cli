@@ -1,5 +1,6 @@
 import Console
 import Foundation
+import Yaproq
 
 extension CLI.Chaqmoq {
     /// A command to create a new application.
@@ -26,21 +27,36 @@ extension CLI.Chaqmoq {
         /// See `ParsableCommand`.
         public func run() throws {
             let fileManager = FileManager.default
-            let applicationDirectory = "\(fileManager.currentDirectoryPath)/\(name)"
+            let applicationURL = URL(string: fileManager.currentDirectoryPath)!.appendingPathComponent(name)
 
-            if fileManager.fileExists(atPath: applicationDirectory) {
+            if fileManager.fileExists(atPath: applicationURL.path) {
                 // TODO: exit with error
             } else {
-                try fileManager.createDirectory(atPath: applicationDirectory, withIntermediateDirectories: false)
-            }
+                // Clone the application template repository
+                CLI.shell("git", "clone", "https://github.com/chaqmoq/template.git", name)
 
-            if fileManager.changeCurrentDirectoryPath(applicationDirectory) {
-                CLI.shell("swift", "package", "init", "--type", "executable", "--name", name)
-            } else {
-                // TODO: exit with error
-            }
+                // Set the package and directory name
+                let fileURL = applicationURL.appendingPathComponent("Package.swift")
+                let templating = Yaproq()
+                let result = try templating.renderTemplate(at: fileURL.path, in: ["name": name])
+                try fileManager.removeItem(atPath: fileURL.path)
+                fileManager.createFile(atPath: fileURL.path, contents: result.data(using: .utf8))
 
-            CLI.shell("swift", "build")
+                // Remove the repository specific files
+                try fileManager.removeItem(atPath: applicationURL.appendingPathComponent(".git").path)
+                try fileManager.removeItem(atPath: applicationURL.appendingPathComponent(".github").path)
+                try fileManager.removeItem(atPath: applicationURL.appendingPathComponent("CODE_OF_CONDUCT.md").path)
+                try fileManager.removeItem(atPath: applicationURL.appendingPathComponent("CONTRIBUTING.md").path)
+                try fileManager.removeItem(atPath: applicationURL.appendingPathComponent("LICENSE").path)
+                try fileManager.removeItem(atPath: applicationURL.appendingPathComponent("README.md").path)
+
+                // Install and build the application
+                if fileManager.changeCurrentDirectoryPath(applicationURL.path) {
+                    CLI.shell("swift", "build")
+                } else {
+                    // TODO: exit with error
+                }
+            }
         }
     }
 }
