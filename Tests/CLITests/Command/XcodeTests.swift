@@ -49,7 +49,9 @@ final class OpenTests: XCTestCase {
 
         // Arrange
         let name = "chaqmoq"
-        try! CLI.Chaqmoq.New(name: name).run()
+
+        // Act/Assert
+        XCTAssertNoThrow(try? CLI.Chaqmoq.New(name: name).run())
 
         // Act
         command = CLI.Chaqmoq.Xcode.Open(name: name)
