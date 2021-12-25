@@ -57,7 +57,7 @@ extension CLI.Chaqmoq.Xcode {
             if fileManager.fileExists(atPath: fileURL.path) {
                 NSWorkspace.shared.open(fileURL)
             } else {
-                // TODO: exit with error
+                print("Can't find a manifest file \"\(fileName)\" to open at \"\(fileURL.path)\".")
             }
             #else
             CLI.shell("open", fileName)

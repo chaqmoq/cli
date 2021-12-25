@@ -30,7 +30,7 @@ extension CLI.Chaqmoq {
             let applicationURL = URL(string: fileManager.currentDirectoryPath)!.appendingPathComponent(name)
 
             if fileManager.fileExists(atPath: applicationURL.path) {
-                // TODO: exit with error
+                print("An application named \"\(name)\" already exists at \"\(applicationURL.path)\".")
             } else {
                 // Clone the application template repository
                 CLI.shell("git", "clone", "https://github.com/chaqmoq/template.git", name)
@@ -54,7 +54,7 @@ extension CLI.Chaqmoq {
                 if fileManager.changeCurrentDirectoryPath(applicationURL.path) {
                     CLI.shell("swift", "build")
                 } else {
-                    // TODO: exit with error
+                    print("Can't change the current directory to \"\(applicationURL.path)\".")
                 }
             }
         }
