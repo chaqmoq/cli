@@ -43,12 +43,11 @@ extension CLI.Chaqmoq {
                 fileManager.createFile(atPath: fileURL.path, contents: result.data(using: .utf8))
 
                 // Remove the repository specific files
-                try fileManager.removeItem(atPath: applicationURL.appendingPathComponent(".git").path)
-                try fileManager.removeItem(atPath: applicationURL.appendingPathComponent(".github").path)
-                try fileManager.removeItem(atPath: applicationURL.appendingPathComponent("CODE_OF_CONDUCT.md").path)
-                try fileManager.removeItem(atPath: applicationURL.appendingPathComponent("CONTRIBUTING.md").path)
-                try fileManager.removeItem(atPath: applicationURL.appendingPathComponent("LICENSE").path)
-                try fileManager.removeItem(atPath: applicationURL.appendingPathComponent("README.md").path)
+                let fileNames = ["CODE_OF_CONDUCT.md", "CONTRIBUTING.md", ".git", ".github", "LICENSE", "README.md"]
+
+                for fileName in fileNames {
+                    try fileManager.removeItem(atPath: applicationURL.appendingPathComponent(fileName).path)
+                }
 
                 // Install and build the application
                 if fileManager.changeCurrentDirectoryPath(applicationURL.path) {
