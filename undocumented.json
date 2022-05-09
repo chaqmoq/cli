@@ -1,0 +1,33 @@
+{
+  "warnings": [
+    {
+      "file": "/Users/runner/work/cli/cli/Sources/CLI/CLI.swift",
+      "line": 3,
+      "symbol": "CLI",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/cli/cli/Sources/CLI/CLI.swift",
+      "line": 3,
+      "symbol": "CLI",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/cli/cli/Sources/CLI/CLI.swift",
+      "line": 5,
+      "symbol": "CLI.shell(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/cli/cli/Sources/CLI/Command/Xcode.swift",
+      "line": 34,
+      "symbol": "CLI.Chaqmoq.Xcode.Open.name",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    }
+  ],
+  "source_directory": "/Users/runner/work/cli/cli"
+}
