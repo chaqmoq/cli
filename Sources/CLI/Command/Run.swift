@@ -29,6 +29,7 @@ extension CLI.Chaqmoq {
             let environment = self.environment ?? "development"
             let dotEnv = DotEnv()
             dotEnv.set(environment, forKey: "CHAQMOQ_ENV")
+            try dotEnv.load(at: ".env.\(environment)")
 
             let queue = DispatchQueue(label: "dev.chaqmoq.cli.shutdown")
             let terminationSignal = makeSignal(SIGTERM, on: queue)
