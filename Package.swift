@@ -1,20 +1,20 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.10
 
 import PackageDescription
 
 let package = Package(
     name: "chaqmoq-cli",
     platforms: [
-        .macOS(.v10_11)
+        .macOS(.v13)
     ],
     products: [
         .library(name: "CLI", targets: ["CLI"]),
         .executable(name: "Run", targets: ["Run"])
     ],
     dependencies: [
-        .package(name: "chaqmoq-console", url: "https://github.com/chaqmoq/console.git", .branch("master")),
-        .package(name: "chaqmoq-dotenv", url: "https://github.com/chaqmoq/dotenv.git", .branch("master")),
-        .package(name: "yaproq", url: "https://github.com/yaproq/yaproq.git", .branch("master"))
+        .package(url: "https://github.com/chaqmoq/console.git", from: "master"),
+        .package(url: "https://github.com/chaqmoq/dotenv.git", from: "master"),
+        .package(url: "https://github.com/yaproq/yaproq.git", from: "master")
     ],
     targets: [
         .target(name: "CLI", dependencies: [

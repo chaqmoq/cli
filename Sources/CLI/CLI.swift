@@ -1,13 +1,19 @@
 import Foundation
+import os
 
 public struct CLI {
     @discardableResult
     public static func shell(_ args: String...) -> Process {
         let process = Process()
-        process.launchPath = "/usr/bin/env"
+        process.executableURL = .init(fileURLWithPath: "/usr/bin/env")
         process.arguments = args
-        process.launch()
-        process.waitUntilExit()
+
+        do {
+            try process.run()
+            process.waitUntilExit()
+        } catch {
+            print("Failed to run process: \(error)")
+        }
 
         return process
     }

@@ -40,22 +40,39 @@ extension CLI.Chaqmoq {
             CLI.shell("swift", "run")
         }
 
-        private func makeSignal(_ code: Int32, on queue: DispatchQueue? = nil) -> DispatchSourceSignal {
-            let signalSource = DispatchSource.makeSignalSource(signal: code, queue: queue)
+        private func makeSignal(
+            _ code: Int32,
+            on queue: DispatchQueue? = nil
+        ) -> DispatchSourceSignal {
+            let signalSource = DispatchSource.makeSignalSource(
+                signal: code,
+                queue: queue
+            )
             signalSource.setEventHandler {
                 let port = 8080
                 let outputPipe = Pipe()
                 let process = Process()
-                process.launchPath = "/usr/bin/env"
+                process.executableURL = .init(fileURLWithPath: "/usr/bin/env")
                 process.arguments = ["lsof", "-t", "-i:\(port)"]
                 process.standardOutput = outputPipe
-                process.waitUntilExit()
-                process.launch()
+
+                do {
+                    try process.run()
+                    process.waitUntilExit()
+                } catch {
+                    print("Failed to run process: \(error)")
+                    return
+                }
 
                 let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
-                let pid = String(decoding: outputData, as: UTF8.self).trimmingCharacters(in: .newlines)
+                let pid = String(
+                    decoding: outputData,
+                    as: UTF8.self
+                ).trimmingCharacters(in: .newlines)
 
-                CLI.shell("kill", "-9", "\(pid)")
+                if !pid.isEmpty {
+                    CLI.shell("kill", "-9", pid)
+                }
             }
             signal(code, SIG_IGN)
 
