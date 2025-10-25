@@ -1,5 +1,4 @@
 import Foundation
-import os
 
 public struct CLI {
     @discardableResult
