@@ -12,17 +12,17 @@ let package = Package(
         .executable(name: "Run", targets: ["Run"])
     ],
     dependencies: [
-        .package(url: "https://github.com/chaqmoq/console.git", from: "master"),
-        .package(url: "https://github.com/chaqmoq/dotenv.git", from: "master"),
-        .package(url: "https://github.com/yaproq/yaproq.git", from: "master")
+        .package(url: "https://github.com/chaqmoq/console.git", branch: "master"),
+        .package(url: "https://github.com/chaqmoq/dotenv.git", branch: "master"),
+        .package(url: "https://github.com/yaproq/yaproq.git", branch: "master")
     ],
     targets: [
         .target(name: "CLI", dependencies: [
-            .product(name: "Console", package: "chaqmoq-console"),
-            .product(name: "DotEnv", package: "chaqmoq-dotenv"),
+            .product(name: "Console", package: "console"),
+            .product(name: "DotEnv", package: "dotenv"),
             .product(name: "Yaproq", package: "yaproq")
         ]),
-        .target(name: "Run", dependencies: [
+        .executableTarget(name: "Run", dependencies: [
             .target(name: "CLI")
         ]),
         .testTarget(name: "CLITests", dependencies: [
