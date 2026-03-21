@@ -33,6 +33,18 @@ extension CLI.Chaqmoq.Xcode {
         /// The name of an application.
         public var name: String?
 
+        #if os(macOS)
+        /// Injectable opener — defaults to `NSWorkspace.shared.open(_:)`.
+        /// Override in tests to suppress the real Xcode.app launch.
+        public var _opener: ((URL) -> Void)? = nil
+
+        // Closures can't conform to Decodable, so exclude _opener from the
+        // synthesised init(from:). Only the command-line arguments need decoding.
+        private enum CodingKeys: String, CodingKey {
+            case name
+        }
+        #endif
+
         /// Initializes a new instance with the name of an application.
         ///
         /// - Parameter name: The name of an application.
@@ -55,12 +67,19 @@ extension CLI.Chaqmoq.Xcode {
             fileURL.appendPathComponent(fileName)
 
             if fileManager.fileExists(atPath: fileURL.path) {
-                NSWorkspace.shared.open(fileURL)
+                let open = _opener ?? { NSWorkspace.shared.open($0) }
+                open(fileURL)
             } else {
                 print("Can't find a manifest file \"\(fileName)\" to open at \"\(fileURL.path)\".")
             }
             #else
-            CLI.shell("open", fileName)
+            // Construct the full path so that --name is respected on non-macOS platforms.
+            let fileURL = URL(fileURLWithPath: applicationDirectory).appendingPathComponent(fileName)
+            if fileManager.fileExists(atPath: fileURL.path) {
+                CLI.shell("open", fileURL.path)
+            } else {
+                print("Can't find a manifest file \"\(fileName)\" to open at \"\(fileURL.path)\".")
+            }
             #endif
         }
     }

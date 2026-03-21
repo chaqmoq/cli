@@ -29,52 +29,85 @@ extension CLI.Chaqmoq {
             let environment = self.environment ?? "development"
             let dotEnv = DotEnv()
             dotEnv.set(environment, forKey: "CHAQMOQ_ENV")
-            try dotEnv.load(at: ".env.\(environment)")
+
+            // A missing .env file is a warning, not a fatal error —
+            // projects without one should still be runnable.
+            do {
+                try dotEnv.load(at: ".env.\(environment)")
+            } catch {
+                print("Warning: Could not load environment file .env.\(environment): \(error)")
+            }
+
+            // POSIX signal disposition must be set to SIG_IGN *before* creating dispatch sources.
+            // A signal arriving between source creation and this call would invoke the default
+            // handler (process termination).
+            signal(SIGTERM, SIG_IGN)
+            signal(SIGINT, SIG_IGN)
+
+            // Start swift run as a non-blocking Process so signal handlers can terminate it.
+            // Using CLI.shell would block via waitUntilExit(), making it impossible for the
+            // signal handler to reach the child process.
+            let swiftProcess = Process()
+            swiftProcess.executableURL = URL(fileURLWithPath: "/usr/bin/env")
+            swiftProcess.arguments = ["swift", "run"]
+
+            do {
+                try swiftProcess.run()
+            } catch {
+                print("Failed to start swift run: \(error)")
+                return
+            }
 
             let queue = DispatchQueue(label: "dev.chaqmoq.cli.shutdown")
-            let terminationSignal = makeSignal(SIGTERM, on: queue)
+            let terminationSignal = makeSignal(SIGTERM, process: swiftProcess, on: queue)
+            let interruptionSignal = makeSignal(SIGINT, process: swiftProcess, on: queue)
             terminationSignal.resume()
-            let interruptionSignal = makeSignal(SIGINT, on: queue)
             interruptionSignal.resume()
 
-            CLI.shell("swift", "run")
+            // Block until swift run exits, keeping signal source objects alive for the duration.
+            withExtendedLifetime((terminationSignal, interruptionSignal)) {
+                swiftProcess.waitUntilExit()
+            }
         }
 
         private func makeSignal(
             _ code: Int32,
+            process: Process,
             on queue: DispatchQueue? = nil
         ) -> DispatchSourceSignal {
-            let signalSource = DispatchSource.makeSignalSource(
-                signal: code,
-                queue: queue
-            )
+            let signalSource = DispatchSource.makeSignalSource(signal: code, queue: queue)
             signalSource.setEventHandler {
                 let port = 8080
                 let outputPipe = Pipe()
-                let process = Process()
-                process.executableURL = .init(fileURLWithPath: "/usr/bin/env")
-                process.arguments = ["lsof", "-t", "-i:\(port)"]
-                process.standardOutput = outputPipe
+                let lsofProcess = Process()
+                lsofProcess.executableURL = URL(fileURLWithPath: "/usr/bin/env")
+                lsofProcess.arguments = ["lsof", "-t", "-i:\(port)"]
+                lsofProcess.standardOutput = outputPipe
 
                 do {
-                    try process.run()
-                    process.waitUntilExit()
+                    try lsofProcess.run()
+                    lsofProcess.waitUntilExit()
                 } catch {
-                    print("Failed to run process: \(error)")
-                    return
+                    print("Failed to run lsof: \(error)")
                 }
 
-                let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
-                let pid = String(
-                    decoding: outputData,
+                let output = String(
+                    decoding: outputPipe.fileHandleForReading.readDataToEndOfFile(),
                     as: UTF8.self
-                ).trimmingCharacters(in: .newlines)
-
-                if !pid.isEmpty {
+                )
+                // lsof -t can return multiple PIDs (one per line); kill each one individually.
+                // Passing the whole newline-separated string as a single argument to kill silently
+                // fails when more than one process holds the port.
+                let pids = output.split(whereSeparator: \.isWhitespace).map(String.init)
+                for pid in pids {
                     CLI.shell("kill", "-9", pid)
                 }
+
+                // Terminate the swift run process. waitUntilExit() on the main thread will
+                // unblock once the process exits, so run() returns and the CLI exits naturally —
+                // no explicit exit() call needed (and calling it would kill the test runner).
+                process.terminate()
             }
-            signal(code, SIG_IGN)
 
             return signalSource
         }

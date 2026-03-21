@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "chaqmoq-cli",
     platforms: [
-        .macOS(.v13)
+        .macOS(.v12)
     ],
     products: [
         .library(name: "CLI", targets: ["CLI"]),
